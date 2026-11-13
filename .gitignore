@@ -8,6 +8,7 @@ venv/
 # Data: large or licence-restricted files are downloaded, never committed
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/CHECKSUMS.txt
 data/interim/
 
 # Env and secrets
