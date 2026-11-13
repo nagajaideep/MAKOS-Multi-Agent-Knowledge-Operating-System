@@ -1,0 +1,131 @@
+{
+  "cases": 251734,
+  "events": 1595923,
+  "activities": 42,
+  "case_attributes": [
+    "Company",
+    "Document Type",
+    "GR-Based Inv. Verif.",
+    "Goods Receipt",
+    "Item",
+    "Item Category",
+    "Item Type",
+    "Name",
+    "Purch. Doc. Category name",
+    "Purchasing Document",
+    "Source",
+    "Spend area text",
+    "Spend classification text",
+    "Sub spend area text",
+    "Vendor",
+    "case_id"
+  ],
+  "event_attributes": [
+    "Cumulative net worth (EUR)",
+    "User",
+    "activity",
+    "case_id",
+    "org:resource",
+    "seq",
+    "time:timestamp"
+  ],
+  "purchase_documents": 76349,
+  "vendors": 1975,
+  "item_category_counts": {
+    "3-way match, invoice before GR": 221010,
+    "3-way match, invoice after GR": 15182,
+    "Consignment": 14498,
+    "2-way match": 1044
+  },
+  "first_event": "1948-01-26T22:59:00+00:00",
+  "last_event": "2020-04-09T21:59:00+00:00",
+  "events_per_year": {
+    "1948": 10,
+    "1993": 9,
+    "2001": 22,
+    "2008": 45,
+    "2015": 3,
+    "2016": 6,
+    "2017": 223,
+    "2018": 1550468,
+    "2019": 45135,
+    "2020": 2
+  },
+  "activity_counts": {
+    "Record Goods Receipt": 314097,
+    "Create Purchase Order Item": 251734,
+    "Record Invoice Receipt": 228760,
+    "Vendor creates invoice": 219919,
+    "Clear Invoice": 194393,
+    "Record Service Entry Sheet": 164975,
+    "Remove Payment Block": 57136,
+    "Create Purchase Requisition Item": 46592,
+    "Receive Order Confirmation": 32065,
+    "Change Quantity": 21449,
+    "Change Price": 12423,
+    "Delete Purchase Order Item": 8875,
+    "Change Approval for Purchase Order": 7541,
+    "Cancel Invoice Receipt": 7096,
+    "Vendor creates debit memo": 6255,
+    "Change Delivery Indicator": 3289,
+    "Cancel Goods Receipt": 3096,
+    "SRM: In Transfer to Execution Syst.": 1765,
+    "SRM: Created": 1628,
+    "SRM: Complete": 1628,
+    "SRM: Awaiting Approval": 1628,
+    "SRM: Document Completed": 1628,
+    "SRM: Ordered": 1628,
+    "Release Purchase Order": 1610,
+    "SRM: Change was Transmitted": 1440,
+    "Reactivate Purchase Order Item": 543,
+    "Block Purchase Order Item": 514,
+    "Cancel Subsequent Invoice": 491,
+    "Release Purchase Requisition": 467,
+    "Change Storage Location": 415,
+    "Update Order Confirmation": 244,
+    "SRM: Deleted": 188,
+    "Record Subsequent Invoice": 167,
+    "Set Payment Block": 124,
+    "SRM: Transfer Failed (E.Sys.)": 45,
+    "Change Currency": 35,
+    "Change Final Invoice Indicator": 11,
+    "SRM: Transaction Completed": 8,
+    "Change payment term": 7,
+    "SRM: Incomplete": 6,
+    "SRM: Held": 6,
+    "Change Rejection Indicator": 2
+  },
+  "events_per_case": {
+    "count": 251734.0,
+    "mean": 6.33971970413214,
+    "std": 13.057442863247045,
+    "min": 1.0,
+    "25%": 5.0,
+    "50%": 5.0,
+    "75%": 6.0,
+    "max": 990.0
+  },
+  "missing_case_values": {},
+  "checks": {
+    "cases": {
+      "expected": 251734,
+      "found": 251734,
+      "ok": true
+    },
+    "purchase_documents": {
+      "expected": 76349,
+      "found": 76349,
+      "ok": true
+    },
+    "events": {
+      "expected": 1595923,
+      "found": 1595923,
+      "ok": true
+    },
+    "activities": {
+      "expected": 42,
+      "found": 42,
+      "ok": true
+    }
+  }
+}
