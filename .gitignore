@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Data: large or licence-restricted files are downloaded, never committed
+data/raw/*
+!data/raw/.gitkeep
+data/interim/
+
+# Env and secrets
+.env
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
