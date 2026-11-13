@@ -1,0 +1,26 @@
+# Core profile: what you need for daily development (runs in 8 GB RAM).
+#   docker compose up -d
+# Later stages add a "full" profile (Ollama, Langfuse).
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: makos
+      POSTGRES_PASSWORD: makos
+      POSTGRES_DB: makos
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U makos"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:

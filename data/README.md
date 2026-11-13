@@ -32,9 +32,58 @@ and exits with an error if they differ.
 
 Commit `data/profile/` and `data/raw/CHECKSUMS.txt` after running it.
 
+## Stage 3: load into PostgreSQL
+
+Needs Docker Desktop (or any PostgreSQL 16 with pgvector).
+
+```bash
+docker compose up -d                 # Postgres + pgvector and Redis
+python -m pip install -r requirements.txt
+alembic upgrade head                 # creates the 11 tables
+python -m domains.bpi_p2p.loader     # on Windows, first run:  set PYTHONPATH=backend
+```
+
+The loader bulk-loads with COPY (a few minutes for 1.6M events) and checks the
+database counts against `data/profile/bpi2019_profile.json`. Use `--truncate`
+to reload. Events dated outside 2017-01-01 to 2019-12-31 are kept and flagged
+`ts_outlier`.
+
+## Stage 4: baseline audit and splits
+
+```bash
+python -m domains.bpi_p2p.audit        # on Windows, first run:  set PYTHONPATH=backend
+```
+
+Applies the BPI matching rules (R1 value mismatch, R2 over PO value, R3 invoice
+before goods receipt, R4 paid without goods receipt, R6 duplicate invoice) to
+every PO line item. Writes candidate labels to `data/labels/` (not in git),
+the fixed 60/20/20 split by purchase document to `data/splits/`, and a summary
+to `data/profile/baseline_audit.md`. These are **candidate** labels until the
+two-reviewer check.
+
+## Stage 5: policy manuals
+
+```bash
+python data/scripts/download_policies.py bpi_p2p   # saves PDFs to data/raw/policy/ and checks SHA-256
+python -m makos.core.documents.ingest --pack bpi_p2p   # on Windows, first run:  set PYTHONPATH=backend
+```
+
+If a government site blocks the script, open the printed URL in a browser and
+save the PDF into `data/raw/policy/` under the file name shown. For the 2024
+edition use the official list at https://doe.gov.in/manuals ("Manual for
+Procurement of Goods - Second Edition, 2024") and save it as
+`Manual_for_Procurement_of_Goods_2024.pdf`.
+
+The parser splits each manual into numbered clauses with edition, effective
+date, page and parent heading, writes `data/interim/bpi_p2p_clauses.parquet`,
+and checks that every clause cited in `backend/domains/bpi_p2p/policy_map.yaml` exists.
+The policy map is a **draft** until two reviewers sign it off.
+
 | Folder | Contents | In git? |
 | --- | --- | --- |
 | `raw/` | Downloaded source files | Only `CHECKSUMS.txt` |
 | `interim/` | Parquet tables built from raw files | No |
-| `profile/` | Profiling reports | Yes |
+| `profile/` | Profiling and baseline-audit reports | Yes |
+| `labels/` | Candidate labels (parquet) | No |
+| `splits/` | Train/val/test split by purchase document | Yes |
 | `scripts/` | Download and processing code | Yes |

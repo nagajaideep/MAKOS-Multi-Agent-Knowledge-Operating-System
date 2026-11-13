@@ -1,0 +1,69 @@
+# Domain pack: purchase-to-pay audit on BPI Challenge 2019
+#
+# Real procure-to-pay event log (CC BY 4.0) checked against Indian procurement
+# policy (Manual for Procurement of Goods 2017/2022/2024, GFR 2017).
+# Built in stages 1-5; kept as the first working example of a MAKOS pack.
+
+name: bpi_p2p
+title: Purchase-to-pay audit (BPI Challenge 2019)
+description: >
+  Audit purchase-order line items (PO -> goods receipt -> invoice) against
+  matching rules and the procurement policy edition in force on the document date.
+
+models_module: domains.bpi_p2p.models
+
+entities:
+  - {name: vendor, table: vendors, key: vendor_id, description: "Anonymised supplier"}
+  - {name: purchase_document, table: purchase_documents, key: po_id}
+  - {name: po_item, table: po_items, key: case_id, description: "One BPI case = one PO line item"}
+  - {name: event, table: events, key: event_id, description: "PO, goods receipt, invoice, clearing events"}
+
+documents:
+  raw_dir: data/raw/policy
+  sources:
+    - source_id: goods_manual
+      kind: manual
+      editions:
+        - edition: "2017"
+          title: Manual for Procurement of Goods, 2017
+          effective_from: 2017-04-05          # foreword date
+          filename: Manual_for_Procurement_of_Goods_2017.pdf
+          url: https://ns1.sctimst.ac.in/About%20SCTIMST/Right%20to%20Information/resources/Manual%20for%20Procurement%20of%20Goods%202017.pdf
+          sha256: 9d4d7179170aea9effcec3d134e98c53785db548cd1b8b18b5e7ce6836621f9f
+        - edition: "2022"
+          title: Manual for Procurement of Goods (Updated June, 2022)
+          effective_from: 2022-07-01          # public release
+          filename: Manual_for_Procurement_of_Goods_2022.pdf
+          url: https://sric.iitkgp.ac.in/web4/public/docss/Manual%20for%20Procurement%20of%20Goods.pdf
+          sha256: ac9e31c465496bccfd2aa221773645bf1edaa0786b1911ddd136bffa09d79b2b
+        - edition: "2024"
+          title: Manual for Procurement of Goods, Second Edition, 2024
+          effective_from: 2024-08-16          # covering office memorandum
+          filename: Manual_for_Procurement_of_Goods_2024.pdf
+          url: https://doe.gov.in/manuals
+          sha256: 351b1f6f4cde096e5be83a9e331ca0fa25c0ceda91596c2b4db6a028aaef3b4c
+    - source_id: gfr
+      kind: rules
+      editions:
+        - edition: "2017-amended-2024-07-31"
+          title: General Financial Rules 2017, Ch. 6 (amended up to 31.07.2024)
+          effective_from: 2024-07-31
+          filename: GFR_2017_Amended_upto_31-07-2024.pdf
+          url: https://iitk.ac.in/centralstores/data/GFR_2017_Amended_upto_31-07-2024.pdf
+          sha256: be7bad84362c4ddb305f5cb8c800bd112bec613f4320097f69ec49ed85f0c87b
+
+policy_map: policy_map.yaml
+
+actions:
+  - name: hold_invoice
+    description: Put the invoice for a PO item on payment hold (sandbox only).
+    requires_approval: true
+    allowed_roles: [approver]
+  - name: notify_buyer
+    description: Send the evidence-linked exception report to the buyer.
+    requires_approval: false
+    allowed_roles: [analyst, approver]
+
+eval_sets:
+  candidate_labels: data/labels/candidate_labels.parquet
+  splits: data/splits/bpi2019_po_splits.csv
