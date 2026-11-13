@@ -10,7 +10,7 @@ data:
 	$(PY) data/scripts/download_bpi2019.py
 
 profile:
-	$(PY) data/scripts/profile_bpi2019.py $$(ls data/raw/*.xes* data/raw/*.zip 2>/dev/null | head -1)
+	$(PY) data/scripts/profile_bpi2019.py
 
 test:
 	$(PY) -m pytest -q

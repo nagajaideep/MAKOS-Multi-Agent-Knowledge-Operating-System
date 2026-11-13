@@ -122,9 +122,16 @@ def to_markdown(p: dict) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("xes", type=Path, help="path to the downloaded BPI 2019 .xes (or .xes.gz / .zip)")
+    ap.add_argument("xes", type=Path, nargs="?", help="path to the BPI 2019 .xes / .xes.gz / .zip "
+                    "(default: the first one found in data/raw/)")
     ap.add_argument("--no-parquet", action="store_true", help="skip writing the parquet tables")
     args = ap.parse_args()
+    if args.xes is None:
+        raw = DATA_DIR / "raw"
+        found = sorted(p for p in raw.iterdir() if p.name.endswith((".xes", ".xes.gz", ".zip")))
+        if not found:
+            sys.exit(f"no .xes file in {raw}. Run: python data/scripts/download_bpi2019.py")
+        args.xes = found[0]
 
     print(f"reading {args.xes} ...")
     cases, events = load(args.xes)

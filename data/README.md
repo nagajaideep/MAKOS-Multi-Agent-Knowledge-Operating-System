@@ -11,11 +11,15 @@ Real purchase-to-pay event log of a multinational paints and coatings company
 Cite: van Dongen, B.F. (2019). *BPI Challenge 2019*. 4TU.ResearchData.
 https://doi.org/10.4121/uuid:d06aff4b-79f0-45e6-8ec8-e19730c248f1
 
+Any OS (Windows, macOS, Linux):
+
 ```bash
-make install
-make data      # downloads ~695 MB into data/raw/ and writes CHECKSUMS.txt
-make profile   # converts to parquet and writes data/profile/bpi2019_profile.md
+python -m pip install -r requirements.txt
+python data/scripts/download_bpi2019.py   # ~695 MB into data/raw/, writes CHECKSUMS.txt
+python data/scripts/profile_bpi2019.py    # writes data/profile/bpi2019_profile.md
 ```
+
+On macOS/Linux, `make install && make data && make profile` does the same.
 
 `make profile` checks its counts against the published figures
 (251,734 cases, 76,349 purchase documents, 1,595,923 events, 42 activities)
