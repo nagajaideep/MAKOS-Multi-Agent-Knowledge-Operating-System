@@ -1,0 +1,58 @@
+{
+  "config": {
+    "rel_tol": 0.01,
+    "abs_tol": 1.0,
+    "dup_window_days": 14,
+    "valid_from": "2017-01-01",
+    "valid_to": "2020-01-01"
+  },
+  "cases": 251734,
+  "cases_with_exception": 8602,
+  "per_rule": {
+    "R1_VALUE_MISMATCH": 5523,
+    "R2_OVER_PO_VALUE": 0,
+    "R3_IR_BEFORE_GR": 0,
+    "R4_PAID_WITHOUT_GR": 693,
+    "R6_DUPLICATE_IR": 3151
+  },
+  "per_rule_by_category": {
+    "2-way match": {
+      "R1_VALUE_MISMATCH": 0,
+      "R2_OVER_PO_VALUE": 0,
+      "R3_IR_BEFORE_GR": 0,
+      "R4_PAID_WITHOUT_GR": 0,
+      "R6_DUPLICATE_IR": 0
+    },
+    "3-way match, invoice after GR": {
+      "R1_VALUE_MISMATCH": 1340,
+      "R2_OVER_PO_VALUE": 0,
+      "R3_IR_BEFORE_GR": 0,
+      "R4_PAID_WITHOUT_GR": 7,
+      "R6_DUPLICATE_IR": 415
+    },
+    "3-way match, invoice before GR": {
+      "R1_VALUE_MISMATCH": 4183,
+      "R2_OVER_PO_VALUE": 0,
+      "R3_IR_BEFORE_GR": 0,
+      "R4_PAID_WITHOUT_GR": 686,
+      "R6_DUPLICATE_IR": 2736
+    },
+    "Consignment": {
+      "R1_VALUE_MISMATCH": 0,
+      "R2_OVER_PO_VALUE": 0,
+      "R3_IR_BEFORE_GR": 0,
+      "R4_PAID_WITHOUT_GR": 0,
+      "R6_DUPLICATE_IR": 0
+    }
+  },
+  "split_cases": {
+    "train": 151145,
+    "test": 51046,
+    "val": 49543
+  },
+  "split_exception_rate": {
+    "test": 0.0362,
+    "train": 0.0333,
+    "val": 0.0346
+  }
+}
