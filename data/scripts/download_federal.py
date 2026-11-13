@@ -15,6 +15,7 @@ All sources are public; no API key needed. Large requests are retried.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import sys
@@ -39,12 +40,16 @@ OPENSANCTIONS_FALLBACK = ("https://data.opensanctions.org/artifacts/us_sam_exclu
 
 def _request(url: str, data: dict | None = None, timeout: int = 300, tries: int = 6) -> bytes:
     body = json.dumps(data).encode() if data is not None else None
-    headers = dict(UA, **({"Content-Type": "application/json"} if body else {}))
+    # eCFR refuses uncompressed responses, so always accept gzip and unpack it here
+    headers = dict(UA, **{"Accept-Encoding": "gzip"}, **({"Content-Type": "application/json"} if body else {}))
     for attempt in range(1, tries + 1):
         try:
             req = urllib.request.Request(url, data=body, headers=headers)
             with urllib.request.urlopen(req, timeout=timeout) as r:
-                return r.read()
+                content = r.read()
+                if (r.headers.get("Content-Encoding") or "").lower() == "gzip":
+                    content = gzip.decompress(content)
+                return content
         except urllib.error.HTTPError as e:
             if e.code < 500 and e.code != 429:
                 detail = e.read()[:500].decode(errors="replace")
@@ -133,13 +138,23 @@ def main() -> None:
     ap.add_argument("--only", choices=["usaspending", "sam", "far"])
     args = ap.parse_args()
 
-    if args.only in (None, "far"):
-        download_far()
-    if args.only in (None, "sam"):
-        download_sam()
-    if args.only in (None, "usaspending"):
-        download_usaspending(args.agency, args.start, args.end)
+    steps = {
+        "far": download_far,
+        "sam": download_sam,
+        "usaspending": lambda: download_usaspending(args.agency, args.start, args.end),
+    }
+    failed = []
+    for name, step in steps.items():
+        if args.only in (None, name):
+            try:
+                step()
+            except SystemExit as err:  # keep going with the other sources
+                print(f"FAILED {name}: {err}")
+                failed.append(name)
     write_checksums()
+    if failed:
+        sys.exit(f"rerun the failed parts with --only: {', '.join(failed)}")
+    print("all parts downloaded")
 
 
 if __name__ == "__main__":
