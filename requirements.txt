@@ -1,0 +1,4 @@
+# Stage 1: data download and profiling
+pandas>=2.2
+pyarrow>=16.0
+pytest>=8.0
