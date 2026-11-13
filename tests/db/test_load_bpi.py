@@ -1,5 +1,4 @@
 """Loader tests on the XES format fixture (not real data, parser/loader test only)."""
-import pandas as pd
 import pytest
 from sqlalchemy import create_engine, text
 
