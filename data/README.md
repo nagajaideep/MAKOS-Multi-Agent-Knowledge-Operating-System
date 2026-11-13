@@ -61,6 +61,24 @@ the fixed 60/20/20 split by purchase document to `data/splits/`, and a summary
 to `data/profile/baseline_audit.md`. These are **candidate** labels until the
 two-reviewer check.
 
+## Stage 5: policy manuals
+
+```bash
+python data/scripts/download_policies.py   # saves PDFs to data/raw/policy/ and checks SHA-256
+python -m makos.policy.ingest              # on Windows, first run:  set PYTHONPATH=backend
+```
+
+If a government site blocks the script, open the printed URL in a browser and
+save the PDF into `data/raw/policy/` under the file name shown. For the 2024
+edition use the official list at https://doe.gov.in/manuals ("Manual for
+Procurement of Goods - Second Edition, 2024") and save it as
+`Manual_for_Procurement_of_Goods_2024.pdf`.
+
+The parser splits each manual into numbered clauses with edition, effective
+date, page and parent heading, writes `data/interim/policy_clauses.parquet`,
+and checks that every clause cited in `data/policy/policy_map.yaml` exists.
+`policy_map.yaml` is a **draft** until two reviewers sign it off.
+
 | Folder | Contents | In git? |
 | --- | --- | --- |
 | `raw/` | Downloaded source files | Only `CHECKSUMS.txt` |
