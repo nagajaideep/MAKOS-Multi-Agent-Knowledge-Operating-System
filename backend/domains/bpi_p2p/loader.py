@@ -5,7 +5,7 @@ loads them with COPY. Then checks the database counts against
 data/profile/bpi2019_profile.json.
 
     alembic upgrade head
-    python -m makos.data.load_bpi            # add --truncate to reload
+    python -m domains.bpi_p2p.loader         # add --truncate to reload
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 from makos.config import DATA_DIR
-from makos.db.session import get_engine
+from makos.core.db.session import get_engine
 
 INTERIM = DATA_DIR / "interim"
 PROFILE = DATA_DIR / "profile" / "bpi2019_profile.json"

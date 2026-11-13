@@ -4,7 +4,12 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from makos.config import database_url
-from makos.db.models import Base
+import makos.core.db.models  # noqa: F401  core tables
+from makos.core.db.base import Base
+from makos.core.packs import list_packs, load_pack
+
+for _name in list_packs():  # every pack's business tables
+    load_pack(_name).load_models()
 
 config = context.config
 if config.config_file_name is not None:

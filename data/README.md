@@ -40,7 +40,7 @@ Needs Docker Desktop (or any PostgreSQL 16 with pgvector).
 docker compose up -d                 # Postgres + pgvector and Redis
 python -m pip install -r requirements.txt
 alembic upgrade head                 # creates the 11 tables
-python -m makos.data.load_bpi        # on Windows, first run:  set PYTHONPATH=backend
+python -m domains.bpi_p2p.loader     # on Windows, first run:  set PYTHONPATH=backend
 ```
 
 The loader bulk-loads with COPY (a few minutes for 1.6M events) and checks the
@@ -51,7 +51,7 @@ to reload. Events dated outside 2017-01-01 to 2019-12-31 are kept and flagged
 ## Stage 4: baseline audit and splits
 
 ```bash
-python -m makos.audit.baseline         # on Windows, first run:  set PYTHONPATH=backend
+python -m domains.bpi_p2p.audit        # on Windows, first run:  set PYTHONPATH=backend
 ```
 
 Applies the BPI matching rules (R1 value mismatch, R2 over PO value, R3 invoice
@@ -64,8 +64,8 @@ two-reviewer check.
 ## Stage 5: policy manuals
 
 ```bash
-python data/scripts/download_policies.py   # saves PDFs to data/raw/policy/ and checks SHA-256
-python -m makos.policy.ingest              # on Windows, first run:  set PYTHONPATH=backend
+python data/scripts/download_policies.py bpi_p2p   # saves PDFs to data/raw/policy/ and checks SHA-256
+python -m makos.core.documents.ingest --pack bpi_p2p   # on Windows, first run:  set PYTHONPATH=backend
 ```
 
 If a government site blocks the script, open the printed URL in a browser and
@@ -75,9 +75,9 @@ Procurement of Goods - Second Edition, 2024") and save it as
 `Manual_for_Procurement_of_Goods_2024.pdf`.
 
 The parser splits each manual into numbered clauses with edition, effective
-date, page and parent heading, writes `data/interim/policy_clauses.parquet`,
-and checks that every clause cited in `data/policy/policy_map.yaml` exists.
-`policy_map.yaml` is a **draft** until two reviewers sign it off.
+date, page and parent heading, writes `data/interim/bpi_p2p_clauses.parquet`,
+and checks that every clause cited in `backend/domains/bpi_p2p/policy_map.yaml` exists.
+The policy map is a **draft** until two reviewers sign it off.
 
 | Folder | Contents | In git? |
 | --- | --- | --- |

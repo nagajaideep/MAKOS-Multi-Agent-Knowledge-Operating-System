@@ -8,7 +8,7 @@ The parser:
   3. stops at the annexures.
 GFR uses "Rule NNN" headings instead.
 
-    python -m makos.policy.ingest            # reads data/raw/policy/*.pdf
+    python -m makos.core.documents.ingest --pack bpi_p2p   # reads the pack's raw_dir
 """
 from __future__ import annotations
 
@@ -22,9 +22,8 @@ from pathlib import Path
 import pandas as pd
 
 from makos.config import DATA_DIR
-from makos.policy.editions import EDITIONS, Edition
-
-RAW = DATA_DIR / "raw" / "policy"
+from makos.core.documents.editions import Edition
+from makos.core.packs import DomainPack, load_pack
 
 HEADING = re.compile(r"^\s*(\d{1,2}(?:\.\d{1,2}){1,3})\.?[ \t]+(\S.*)$")
 LEADER = re.compile(r"\.{4,}\s*[ivxlc\d]*\s*$", re.I)
@@ -148,7 +147,7 @@ def parse_manual(pages: list[str], ed: Edition) -> list[Clause]:
     return clauses
 
 
-def parse_gfr(pages: list[str], ed: Edition) -> list[Clause]:
+def parse_rules(pages: list[str], ed: Edition) -> list[Clause]:
     clauses: list[Clause] = []
     cur: dict | None = None
     for pno, page in enumerate(pages, start=1):
@@ -179,18 +178,19 @@ def sha256_of(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def ingest(raw_dir: Path = RAW) -> tuple[pd.DataFrame, list[str]]:
+def ingest(pack: DomainPack, raw_dir: Path | None = None) -> tuple[pd.DataFrame, list[str]]:
+    raw_dir = raw_dir or pack.raw_dir
     rows, notes = [], []
-    for ed in EDITIONS:
+    for ed in pack.editions:
         pdf = raw_dir / ed.filename
         if not pdf.exists():
-            notes.append(f"missing: {ed.filename} ({ed.title}) - see data/README.md")
+            notes.append(f"missing: {ed.filename} ({ed.title}) - download from {ed.url}")
             continue
         digest = sha256_of(pdf)
         if ed.sha256 and digest != ed.sha256:
             notes.append(f"checksum differs for {ed.filename}: {digest}")
         pages = extract_pages(pdf)
-        clauses = parse_manual(pages, ed) if ed.kind == "manual" else parse_gfr(pages, ed)
+        clauses = parse_manual(pages, ed) if ed.kind == "manual" else parse_rules(pages, ed)
         notes.append(f"{ed.title}: {len(pages)} pages, {len(clauses)} clauses")
         for c in clauses:
             row = asdict(c)
@@ -211,9 +211,12 @@ def summary_markdown(df: pd.DataFrame, notes: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def check_policy_map(df: pd.DataFrame, path: Path = DATA_DIR / "policy" / "policy_map.yaml") -> list[str]:
-    """Every clause cited in policy_map.yaml must exist in the parsed corpus."""
+def check_policy_map(df: pd.DataFrame, path: Path | None) -> list[str]:
+    """Every clause cited in the pack's policy map must exist in the parsed corpus."""
     import yaml
+
+    if path is None:
+        return []
 
     have = set(zip(df["source_id"], df["edition"], df["number"]))
     loaded = set(zip(df["source_id"], df["edition"]))
@@ -229,21 +232,23 @@ def check_policy_map(df: pd.DataFrame, path: Path = DATA_DIR / "policy" / "polic
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--raw-dir", type=Path, default=RAW)
+    ap.add_argument("--pack", required=True, help="domain pack name, e.g. bpi_p2p")
+    ap.add_argument("--raw-dir", type=Path, help="override the pack's raw_dir")
     args = ap.parse_args()
-    df, notes = ingest(args.raw_dir)
+    pack = load_pack(args.pack)
+    df, notes = ingest(pack, args.raw_dir)
     print("\n".join(notes))
     if df.empty:
-        sys.exit("no policy PDFs found")
+        sys.exit("no policy documents found")
     out = DATA_DIR / "interim"
     out.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(out / "policy_clauses.parquet", index=False)
-    (DATA_DIR / "profile" / "policy_corpus.md").write_text(summary_markdown(df, notes))
-    print(f"wrote {len(df)} clauses to {out / 'policy_clauses.parquet'}")
-    missing = check_policy_map(df)
+    df.to_parquet(out / f"{pack.name}_clauses.parquet", index=False)
+    (DATA_DIR / "profile" / f"{pack.name}_documents.md").write_text(summary_markdown(df, notes))
+    print(f"wrote {len(df)} clauses to {out / (pack.name + '_clauses.parquet')}")
+    missing = check_policy_map(df, pack.policy_map)
     if missing:
-        sys.exit("policy_map.yaml cites clauses that were not found:\n  " + "\n  ".join(missing))
-    print("policy_map.yaml: every cited clause found")
+        sys.exit("policy map cites clauses that were not found:\n  " + "\n  ".join(missing))
+    print("policy map: every cited clause found")
 
 
 if __name__ == "__main__":

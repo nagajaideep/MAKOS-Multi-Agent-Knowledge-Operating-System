@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from sqlalchemy import create_engine, text
 
-from makos.data.load_bpi import build_tables, load, verify
+from domains.bpi_p2p.loader import build_tables, load, verify
 from profile_bpi2019 import load as read_xes
 
 from tests_fixtures import FIXTURE_WITH_OUTLIER

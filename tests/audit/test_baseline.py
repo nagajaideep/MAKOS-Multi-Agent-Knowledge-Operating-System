@@ -1,7 +1,7 @@
 """Unit tests for the baseline checks. Inputs are hand-built test cases, not data."""
 import pandas as pd
 
-from makos.audit.baseline import AuditConfig, run, split_for
+from domains.bpi_p2p.audit import AuditConfig, run, split_for
 
 AFTER = "3-way match, invoice after GR"
 BEFORE = "3-way match, invoice before GR"

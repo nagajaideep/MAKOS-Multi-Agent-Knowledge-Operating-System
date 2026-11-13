@@ -20,7 +20,7 @@ Events flagged as timestamp outliers are ignored for ordering checks.
 
 Tolerances are modelling choices; the evaluation reports sensitivity to them.
 
-    python -m makos.audit.baseline
+    python -m domains.bpi_p2p.audit
 """
 from __future__ import annotations
 

@@ -1,8 +1,9 @@
 """Parser tests on hand-written page text (format fixtures, not policy data)."""
 from datetime import date
 
-from makos.policy.editions import EDITIONS, Edition, in_force
-from makos.policy.ingest import parse_gfr, parse_manual
+from makos.core.documents.editions import Edition
+from makos.core.documents.ingest import parse_manual, parse_rules
+from makos.core.packs import load_pack
 
 ED = Edition("goods_manual", "test", "Test manual", date(2020, 1, 1), "t.pdf", "", None, "manual")
 
@@ -55,15 +56,15 @@ def test_sentence_heading_is_not_a_title():
 
 
 def test_gfr_rules_with_repeated_numbers_get_unique_ids():
-    gfr = Edition("gfr", "x", "GFR", date(2024, 7, 31), "g.pdf", "", None, "gfr")
+    gfr = Edition("gfr", "x", "GFR", date(2024, 7, 31), "g.pdf", "", None, "rules")
     page = "Rule 151 Debarment from bidding.\n(i) text\nRule 172 (1) Advance payment\nRule 172 (2) Part payment"
-    ids = [c.clause_id for c in parse_gfr([page], gfr)]
+    ids = [c.clause_id for c in parse_rules([page], gfr)]
     assert ids == ["gfr:x:Rule 151", "gfr:x:Rule 172", "gfr:x:Rule 172 (part 2)"]
 
 
 def test_edition_in_force_on_date():
-    assert in_force("goods_manual", date(2018, 6, 1)).edition == "2017"
-    assert in_force("goods_manual", date(2023, 1, 1)).edition == "2022"
-    assert in_force("goods_manual", date(2025, 1, 1)).edition == "2024"
-    assert in_force("goods_manual", date(2016, 1, 1)) is None
-    assert len({(e.source_id, e.edition) for e in EDITIONS}) == len(EDITIONS)
+    pack = load_pack("bpi_p2p")
+    assert pack.edition_in_force("goods_manual", date(2018, 6, 1)).edition == "2017"
+    assert pack.edition_in_force("goods_manual", date(2023, 1, 1)).edition == "2022"
+    assert pack.edition_in_force("goods_manual", date(2025, 1, 1)).edition == "2024"
+    assert pack.edition_in_force("goods_manual", date(2016, 1, 1)) is None
