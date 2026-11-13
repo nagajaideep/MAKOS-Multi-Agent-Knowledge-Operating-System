@@ -1,0 +1,68 @@
+# Domain pack: US federal contract compliance
+#
+# Real contract awards (USAspending.gov) checked against the SAM.gov exclusion
+# (debarment/suspension) list and the Federal Acquisition Regulation in force
+# on the award date. Records join on the supplier's Unique Entity ID (UEI).
+#
+# Known limit: the SAM public extract holds only exclusions that are currently
+# open, so awards that overlapped an exclusion which has since ended cannot be
+# detected. Reported in the evaluation.
+
+name: federal_contracts
+title: Federal contract compliance (USAspending + SAM.gov + FAR)
+description: >
+  Check federal contract actions against supplier exclusions and the FAR
+  subpart 9.4 rules in force on the action date, and route proposed actions
+  (flag an award, request a responsibility review) through human approval.
+
+# models_module: domains.federal_contracts.models   (added with the loader)
+
+entities:
+  - {name: recipient, table: fc_recipients, key: recipient_uei, description: "Supplier, by SAM Unique Entity ID"}
+  - {name: award, table: fc_awards, key: award_key, description: "Contract (PIID) with its transactions"}
+  - {name: transaction, table: fc_transactions, key: transaction_key, description: "One contract action (base or modification)"}
+  - {name: exclusion, table: fc_exclusions, key: exclusion_id, description: "SAM.gov exclusion record with active/termination dates"}
+
+documents:
+  raw_dir: data/raw/federal_contracts/far
+  sources:
+    - source_id: far_part9
+      kind: ecfr_xml
+      editions:
+        # Point-in-time versions of FAR part 9 from the eCFR. Subpart 9.4
+        # (debarment, suspension, ineligibility) was revised by a final rule
+        # effective 2025-01-17.
+        - edition: "2024-06-01"
+          title: FAR Part 9 as of 2024-06-01
+          effective_from: 2024-06-01
+          filename: far_part9_2024-06-01.xml
+          url: https://www.ecfr.gov/api/versioner/v1/full/2024-06-01/title-48.xml?chapter=1&part=9
+        - edition: "2025-02-01"
+          title: FAR Part 9 as of 2025-02-01 (after the 2025-01-17 subpart 9.4 rule)
+          effective_from: 2025-01-17
+          filename: far_part9_2025-02-01.xml
+          url: https://www.ecfr.gov/api/versioner/v1/full/2025-02-01/title-48.xml?chapter=1&part=9
+
+actions:
+  - name: flag_award
+    description: Flag a contract action that overlaps an active exclusion for contracting-officer review (sandbox).
+    requires_approval: true
+    allowed_roles: [approver]
+  - name: request_responsibility_review
+    description: Open a responsibility-determination review for a supplier (sandbox).
+    requires_approval: true
+    allowed_roles: [approver]
+  - name: notify_officer
+    description: Send the evidence-linked finding to the contracting officer.
+    requires_approval: false
+    allowed_roles: [analyst, approver]
+
+extra_sources:
+  usaspending:
+    description: USAspending.gov contract transactions (bulk download API)
+    licence: US public domain
+    default_agency: General Services Administration
+    default_period: ["2023-10-01", "2024-09-30"]     # fiscal year 2024
+  sam_exclusions:
+    description: SAM.gov exclusions public extract (with UEI), via OpenSanctions source mirror
+    licence: SAM data is US public domain; OpenSanctions distribution CC BY-NC 4.0 (non-commercial)

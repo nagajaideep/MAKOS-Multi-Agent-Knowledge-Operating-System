@@ -68,3 +68,35 @@ def test_edition_in_force_on_date():
     assert pack.edition_in_force("goods_manual", date(2023, 1, 1)).edition == "2022"
     assert pack.edition_in_force("goods_manual", date(2025, 1, 1)).edition == "2024"
     assert pack.edition_in_force("goods_manual", date(2016, 1, 1)) is None
+
+
+ECFR = b"""<?xml version="1.0"?>
+<DIV1 N="48" TYPE="TITLE"><HEAD>Title 48</HEAD>
+ <DIV5 N="9" TYPE="PART"><HEAD>PART 9-CONTRACTOR QUALIFICATIONS</HEAD>
+  <DIV6 N="9.4" TYPE="SUBPART"><HEAD>Subpart 9.4-Debarment, Suspension, and Ineligibility</HEAD>
+   <DIV8 N="9.405" TYPE="SECTION"><HEAD>\xc2\xa7 9.405 Effect of listing.</HEAD>
+     <P>(a) Contractors excluded are excluded from receiving contracts.</P>
+     <P>(b) Agencies shall not solicit offers from excluded contractors.</P>
+   </DIV8>
+  </DIV6>
+ </DIV5>
+</DIV1>"""
+
+
+def test_ecfr_xml_sections():
+    ed = Edition("far_part9", "2024-06-01", "FAR 9", date(2024, 6, 1), "f.xml", "", None, "ecfr_xml")
+    from makos.core.documents.ingest import parse_ecfr_xml
+
+    (c,) = parse_ecfr_xml(ECFR, ed)
+    assert c.number == "9.405" and c.title == "Effect of listing."
+    assert c.parent_title.startswith("Subpart 9.4")
+    assert "excluded from receiving contracts" in c.text and c.text.count("\n") == 1
+    assert c.clause_id == "far_part9:2024-06-01:9.405"
+
+
+def test_federal_pack_loads():
+    pack = load_pack("federal_contracts")
+    assert {e.key for e in pack.entities} >= {"recipient_uei", "award_key"}
+    assert pack.edition_in_force("far_part9", date(2024, 12, 1)).edition == "2024-06-01"
+    assert pack.edition_in_force("far_part9", date(2025, 3, 1)).edition == "2025-02-01"
+    assert pack.extra["extra_sources"]["usaspending"]["default_agency"]

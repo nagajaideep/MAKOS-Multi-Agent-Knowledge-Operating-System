@@ -174,6 +174,45 @@ def parse_rules(pages: list[str], ed: Edition) -> list[Clause]:
     return out
 
 
+def parse_ecfr_xml(xml: bytes, ed: Edition) -> list[Clause]:
+    """Sections of an eCFR XML extract (e.g. FAR part 9 on a date).
+
+    eCFR nests DIV elements by level: DIV5 = part, DIV6 = subpart, DIV8 = section.
+    Each DIV carries N (number) and TYPE attributes and a HEAD title; the text is
+    in its P paragraphs. Page numbers do not exist, so page_start/page_end = 0.
+    """
+    import xml.etree.ElementTree as ET
+
+    root = ET.fromstring(xml)
+    clauses: list[Clause] = []
+
+    def text_of(el) -> str:
+        return re.sub(r"\s+", " ", "".join(el.itertext())).strip()
+
+    def walk(el, subpart_head: str) -> None:
+        for child in el:
+            tag = child.tag if isinstance(child.tag, str) else ""
+            if not tag.startswith("DIV"):
+                continue
+            kind = child.get("TYPE", "").upper()
+            head_el = child.find("HEAD")
+            head = text_of(head_el) if head_el is not None else ""
+            if kind == "SECTION":
+                number = child.get("N", "").replace("§", "").strip()
+                title = re.sub(r"^§\s*[\d.\-]+\s*", "", head).strip()
+                body = "\n".join(text_of(p) for p in child.iter() if isinstance(p.tag, str) and p.tag == "P")
+                chapter = int(number.split(".")[0]) if number.split(".")[0].isdigit() else None
+                clauses.append(Clause(
+                    clause_id=f"{ed.source_id}:{ed.edition}:{number}", source_id=ed.source_id,
+                    edition=ed.edition, number=number, title=title, chapter=chapter,
+                    parent_title=subpart_head, page_start=0, page_end=0, text=body))
+            else:
+                walk(child, head if kind == "SUBPART" else subpart_head)
+
+    walk(root, "")
+    return clauses
+
+
 def sha256_of(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -189,9 +228,13 @@ def ingest(pack: DomainPack, raw_dir: Path | None = None) -> tuple[pd.DataFrame,
         digest = sha256_of(pdf)
         if ed.sha256 and digest != ed.sha256:
             notes.append(f"checksum differs for {ed.filename}: {digest}")
-        pages = extract_pages(pdf)
-        clauses = parse_manual(pages, ed) if ed.kind == "manual" else parse_rules(pages, ed)
-        notes.append(f"{ed.title}: {len(pages)} pages, {len(clauses)} clauses")
+        if ed.kind == "ecfr_xml":
+            clauses = parse_ecfr_xml(pdf.read_bytes(), ed)
+            notes.append(f"{ed.title}: {len(clauses)} sections")
+        else:
+            pages = extract_pages(pdf)
+            clauses = parse_manual(pages, ed) if ed.kind == "manual" else parse_rules(pages, ed)
+            notes.append(f"{ed.title}: {len(pages)} pages, {len(clauses)} clauses")
         for c in clauses:
             row = asdict(c)
             row.update(effective_from=ed.effective_from.isoformat(), locator=c.locator(), file_sha256=digest)

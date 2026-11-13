@@ -17,7 +17,7 @@ def test_bpi_pack_loads():
 
 
 def test_list_packs_finds_bpi():
-    assert "bpi_p2p" in list_packs()
+    assert {"bpi_p2p", "federal_contracts"} <= set(list_packs())
 
 
 def test_pack_models_register_tables():
