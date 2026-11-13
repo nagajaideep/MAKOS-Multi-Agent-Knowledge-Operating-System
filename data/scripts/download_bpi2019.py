@@ -17,6 +17,8 @@ import argparse
 import hashlib
 import json
 import sys
+import time
+import urllib.error
 import urllib.request
 from datetime import date
 from pathlib import Path
@@ -28,7 +30,8 @@ CHUNK = 1 << 20  # 1 MiB
 
 
 def list_files() -> list[dict]:
-    with urllib.request.urlopen(API_URL, timeout=60) as resp:
+    req = urllib.request.Request(API_URL, headers={"User-Agent": "makos-data-download/1.0"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
         return json.load(resp)
 
 
@@ -40,12 +43,30 @@ def sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
-def download(url: str, dest: Path, expected_size: int | None) -> None:
+def download(url: str, dest: Path, expected_size: int | None, attempts: int = 8) -> None:
+    """Download with resume; retry on server errors (figshare often returns 504)."""
+    for attempt in range(1, attempts + 1):
+        try:
+            _download_once(url, dest, expected_size)
+            return
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ConnectionError) as err:
+            code = getattr(err, "code", None)
+            if code and code < 500 and code != 429:
+                raise
+            if attempt == attempts:
+                sys.exit(f"download failed after {attempts} tries ({err}). Run the script again to resume, "
+                         "or download the file in your browser into data/raw/ (see data/README.md).")
+            wait = min(10 * 2 ** (attempt - 1), 120)
+            print(f"\nserver error ({err}); retry {attempt}/{attempts - 1} in {wait}s ...")
+            time.sleep(wait)
+
+
+def _download_once(url: str, dest: Path, expected_size: int | None) -> None:
     have = dest.stat().st_size if dest.exists() else 0
     if expected_size and have == expected_size:
         print(f"already downloaded: {dest.name}")
         return
-    req = urllib.request.Request(url)
+    req = urllib.request.Request(url, headers={"User-Agent": "makos-data-download/1.0"})
     if have:
         req.add_header("Range", f"bytes={have}-")
         print(f"resuming {dest.name} at {have / 1e6:.1f} MB")
