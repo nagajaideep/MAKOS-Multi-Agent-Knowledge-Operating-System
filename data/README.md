@@ -32,6 +32,22 @@ and exits with an error if they differ.
 
 Commit `data/profile/` and `data/raw/CHECKSUMS.txt` after running it.
 
+## Stage 3: load into PostgreSQL
+
+Needs Docker Desktop (or any PostgreSQL 16 with pgvector).
+
+```bash
+docker compose up -d                 # Postgres + pgvector and Redis
+python -m pip install -r requirements.txt
+alembic upgrade head                 # creates the 11 tables
+python -m makos.data.load_bpi        # on Windows, first run:  set PYTHONPATH=backend
+```
+
+The loader bulk-loads with COPY (a few minutes for 1.6M events) and checks the
+database counts against `data/profile/bpi2019_profile.json`. Use `--truncate`
+to reload. Events dated outside 2017-01-01 to 2019-12-31 are kept and flagged
+`ts_outlier`.
+
 | Folder | Contents | In git? |
 | --- | --- | --- |
 | `raw/` | Downloaded source files | Only `CHECKSUMS.txt` |
