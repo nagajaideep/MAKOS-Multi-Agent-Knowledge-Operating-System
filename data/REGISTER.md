@@ -31,6 +31,10 @@ SHA-256 of downloaded files, so every teammate can confirm identical data.
 | File | SHA-256 |
 | --- | --- |
 | BPI_Challenge_2019.xes | `af63bc687fc4152f2123b05c3af7772b37ef3fce2d3f67f812666c9e356baae7` |
+| Manual_for_Procurement_of_Goods_2017.pdf (266 pages) | `9d4d7179170aea9effcec3d134e98c53785db548cd1b8b18b5e7ce6836621f9f` |
+| Manual_for_Procurement_of_Goods_2022.pdf (289 pages) | `ac9e31c465496bccfd2aa221773645bf1edaa0786b1911ddd136bffa09d79b2b` |
+| Manual_for_Procurement_of_Goods_2024.pdf (392 pages) | `351b1f6f4cde096e5be83a9e331ca0fa25c0ceda91596c2b4db6a028aaef3b4c` |
+| GFR_2017_Amended_upto_31-07-2024.pdf (19 pages, ch. 6) | `be7bad84362c4ddb305f5cb8c800bd112bec613f4320097f69ec49ed85f0c87b` |
 
 The same values are written to `data/raw/CHECKSUMS.txt` by the download scripts.
 

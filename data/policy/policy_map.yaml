@@ -1,11 +1,13 @@
 # Which clause grounds each KRN rule, per edition.  v1 DRAFT.
 #
 # Clause numbers below were located by the parser and checked against the
-# PDFs (2017, 2022 editions; GFR ch. 6 amended to 31.07.2024).
+# PDFs (2017, 2022, 2024 editions; GFR ch. 6 amended to 31.07.2024).
+# The 2024 edition renumbers several clauses, e.g. GRIR 9.14.1 -> 9.6.6,
+# passing of bills 9.14.2 -> 9.5.4, debarment 3.5 -> 3.7, authority 1.4 -> 1.5.
+#
 # status:  draft      = proposed, needs two reviewers (P2 + P3) to sign off
 #          weak       = only indirectly supports the rule; reviewers decide
 #          no_clause  = nothing found; the rule must report "no applicable clause"
-# The 2024 edition is added once its PDF is in data/raw/policy/.
 
 version: 1
 reviewed_by: []          # add names when signed off
@@ -15,21 +17,25 @@ rules:
     goods_manual:
       "2017": {clauses: ["9.14.1", "9.14.2"], status: draft,
                why: "Bills are passed on the basis of the Goods Receipt and Inspection Report (GRIR)."}
-      "2022": {clauses: ["9.14.1", "9.14.2"], status: draft,
-               why: "Same provision as 2017."}
+      "2022": {clauses: ["9.14.1", "9.14.2"], status: draft, why: "Same provision as 2017."}
+      "2024": {clauses: ["9.6.6", "9.5.4"], status: draft,
+               why: "Same provision, renumbered: GRIR (9.6.6) and passing of supplier's bills (9.5.4)."}
   R2_OVER_PO_VALUE:      # invoice must not exceed the contracted value
     goods_manual:
       "2017": {clauses: ["9.14.2", "9.2"], status: draft,
                why: "Invoice verified against the purchase order; contract terms not to be varied after conclusion."}
       "2022": {clauses: ["9.14.2", "9.2"], status: draft, why: "Same as 2017."}
+      "2024": {clauses: ["9.5.4", "9.7.2"], status: draft, why: "Same as 2017, renumbered."}
   R3_IR_BEFORE_GR:       # invoice processed only after goods receipt
     goods_manual:
       "2017": {clauses: ["9.14.2"], status: draft, why: "Invoice is received and passed after the GRIR is issued."}
       "2022": {clauses: ["9.14.2"], status: draft, why: "Same as 2017."}
+      "2024": {clauses: ["9.5.4"], status: draft, why: "Same as 2017, renumbered."}
   R4_PAID_WITHOUT_GR:    # payment requires accepted goods
     goods_manual:
       "2017": {clauses: ["9.14.1", "9.14.2"], status: draft, why: "GRIR is the voucher on which the supplier claims payment."}
       "2022": {clauses: ["9.14.1", "9.14.2"], status: draft, why: "Same as 2017."}
+      "2024": {clauses: ["9.6.6", "9.5.4"], status: draft, why: "Same as 2017, renumbered."}
     gfr:
       "2017-amended-2024-07-31": {clauses: ["Rule 172 (part 2)"], status: weak,
                                   why: "Part payment to suppliers depends on delivery terms."}
@@ -38,13 +44,18 @@ rules:
       "2017": {clauses: ["9.14.2"], status: weak,
                why: "Supplier certifies the claim is strictly per contract; no explicit duplicate-invoice clause found."}
       "2022": {clauses: ["9.14.2"], status: weak, why: "Same as 2017."}
+      "2024": {clauses: ["9.5.4"], status: weak, why: "Same as 2017; no explicit duplicate-invoice clause."}
   R7_SUPPLIER_DEBARRED:  # Track B only (BPI vendors are anonymized)
     goods_manual:
       "2017": {clauses: ["3.5"], status: draft, why: "Grades of debarment of suppliers."}
       "2022": {clauses: ["3.5", "3.5.3"], status: draft, why: "Debarment of suppliers; guidelines on debarment from bidding."}
+      "2024": {clauses: ["3.7", "3.7.1", "3.7.2"], status: draft,
+               why: "Debarment moved to 3.7: GFR provisions and current guidelines."}
     gfr:
       "2017-amended-2024-07-31": {clauses: ["Rule 151"], status: draft, why: "Debarment from bidding."}
   R10_APPROVAL_AUTHORITY:
     goods_manual:
       "2017": {clauses: ["1.4"], status: draft, why: "Authorities competent to purchase goods and their purchase powers."}
       "2022": {clauses: ["1.4", "1.4.1"], status: draft, why: "Same, sanction per Delegation of Financial Powers Rules."}
+      "2024": {clauses: ["1.5"], status: draft,
+               why: "Authorities competent to purchase goods and consultation with Financial Advisers (was 1.4)."}

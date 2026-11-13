@@ -40,7 +40,7 @@ EDITIONS: list[Edition] = [
         "goods_manual", "2024", "Manual for Procurement of Goods, Second Edition, 2024", date(2024, 8, 16),
         "Manual_for_Procurement_of_Goods_2024.pdf",
         "https://doe.gov.in/manuals",  # official listing page; download the 2024 Goods manual from it
-        None, "manual",
+        "351b1f6f4cde096e5be83a9e331ca0fa25c0ceda91596c2b4db6a028aaef3b4c", "manual",
     ),
     Edition(
         "gfr", "2017-amended-2024-07-31", "General Financial Rules 2017, Ch. 6 (amended up to 31.07.2024)",
